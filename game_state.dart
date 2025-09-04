@@ -313,7 +313,8 @@ class MatchMetadata {
   final String? awayTeamId; // Aggiunto ID squadra ospite
   final String? filename; //Aggiunto nome del file di origine
   final String? eventId; //Aggiunto ID evento
-
+  final bool isCompleted;
+  
   MatchMetadata({
     this.date,
     this.venue,
@@ -323,6 +324,7 @@ class MatchMetadata {
     this.awayTeamId,
     this.filename,
     this.eventId, //Includi nel costruttore
+    this.isCompleted = false,
   });
     factory MatchMetadata.fromJson(Map<String, dynamic> json) => _$MatchMetadataFromJson(json);
   Map<String, dynamic> toJson() => _$MatchMetadataToJson(this);
@@ -334,8 +336,9 @@ class MatchMetadata {
     String? competition,
     String? homeTeamId,
     String? awayTeamId,
-     String? filename,
-     String? eventId, //Includi nel copyWith
+    String? filename,
+    String? eventId, //Includi nel copyWith
+    bool? isCompleted,
   }) {
     return MatchMetadata(
       date: date ?? this.date,
@@ -346,6 +349,7 @@ class MatchMetadata {
       awayTeamId: awayTeamId ?? this.awayTeamId,
       filename: filename ?? this.filename,
       eventId: eventId ?? this.eventId,
+	  isCompleted: isCompleted ?? this.isCompleted,
     );
   }
 }
