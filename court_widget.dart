@@ -36,35 +36,27 @@ class CourtWidget extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
-        final courtWidth = constraints.maxWidth;
-        final courtHeight = constraints.maxHeight;
+Widget build(BuildContext context) {
+  return LayoutBuilder(
+    builder: (BuildContext context, BoxConstraints constraints) {
+      final courtWidth = constraints.maxWidth;
+      final courtHeight = constraints.maxHeight;
 
-        // La logica per le zone OUT rimane invariata, ma le dimensioni del campo interno
-        // sono ora gestite per i due mezzi campi.
-        final double halfCourtWidth = (courtWidth - 8) / 2; // -8 per la rete
-        final double halfCourtHeight =
-            courtHeight -
-            60; // -60 per le zone OUT verticali (30 sopra, 30 sotto)
-
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.green.shade50,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.green.shade300, width: 2),
-          ),
+      return Container(
+        decoration: BoxDecoration(
+          color: Colors.green.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.green.shade300, width: 2),
+        ),
+        child: SingleChildScrollView(
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               _buildTopOutZones(courtWidth, courtHeight), // Zone OUT superiori
               Expanded(
                 child: Row(
                   children: [
-                    _buildLeftOutZones(
-                      courtWidth,
-                      courtHeight,
-                    ), // Zone OUT sinistre
+                    _buildLeftOutZones(courtWidth, courtHeight), // Zone OUT sinistre
                     Expanded(
                       flex: 4,
                       child: _buildTeamCourt(
@@ -84,23 +76,18 @@ class CourtWidget extends StatelessWidget {
                         halfCourtHeight,
                       ),
                     ),
-                    _buildRightOutZones(
-                      courtWidth,
-                      courtHeight,
-                    ), // Zone OUT destre
+                    _buildRightOutZones(courtWidth, courtHeight), // Zone OUT destre
                   ],
                 ),
               ),
-              _buildBottomOutZones(
-                courtWidth,
-                courtHeight,
-              ), // Zone OUT inferiori
+              _buildBottomOutZones(courtWidth, courtHeight), // Zone OUT inferiori
             ],
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
 
   Widget _buildNet() {
     return Container(
