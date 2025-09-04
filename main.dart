@@ -69,7 +69,6 @@ import 'package:volleyscout_pro/widgets/trajectory_panel_widget.dart';
       },
     );
   }
-
 }
 
 class VolleyballScoutPage extends StatefulWidget {
@@ -88,14 +87,12 @@ class VolleyballScoutPage extends StatefulWidget {
 // main.dart (versione corretta dei metodi)
 class _VolleyballScoutPageState extends State<VolleyballScoutPage>
     with TickerProviderStateMixin {
-  final GameStateService _gameStateService = GameStateService();
+   final GameStateService _gameStateService = GameStateService();
   late GameState gameState;
   late AnimationController _rotationController;
-   
+
   InitialPositions? homeInitialPositions;
   InitialPositions? awayInitialPositions;
- 
-  // Stati per la logica di servizio/ricezione (mantenuti per compatibilità)
 
   int? selectedServeZone;
   int? selectedTargetZone;
@@ -112,8 +109,7 @@ class _VolleyballScoutPageState extends State<VolleyballScoutPage>
   String? selectedFundamental;
   String? selectedType;
   bool _isGameLogicInitialized = false;
-  
-  // Nuovi stati per sistema avanzato
+
   String? selectedPlayerId;
   bool showAdvancedStats = false;
   Rally? currentRally;
@@ -123,7 +119,7 @@ class _VolleyballScoutPageState extends State<VolleyballScoutPage>
   @override
    void didChangeDependencies() {
     super.didChangeDependencies();
-    if (!_isGameLogicInitialized) { // Assicurati che la logica di inizializzazione principale venga eseguita solo una volta
+    if (!_isGameLogicInitialized) {
       final args = ModalRoute.of(context)?.settings.arguments;
       if (args is Map<String, dynamic> && args.containsKey('gameState')) {
         final dynamic maybeGameState = args['gameState'];
@@ -135,38 +131,29 @@ class _VolleyballScoutPageState extends State<VolleyballScoutPage>
         homeInitialPositions = args['homeInitialPositions'] is InitialPositions ? args['homeInitialPositions'] as InitialPositions? : null;
         awayInitialPositions = args['awayInitialPositions'] is InitialPositions ? args['awayInitialPositions'] as InitialPositions? : null;
       } else {
-        // Se la pagina è caricata direttamente senza argomenti (es. per debug o fallback)
-        // crea un GameState iniziale usando le TeamSetup predefinite dal widget.
         gameState = _createInitialGameState();
         homeInitialPositions = null;
         awayInitialPositions = null;
       }
-      _initializeGame(); // Chiama la logica di inizializzazione del gioco qui 
+      _initializeGame();
       _isGameLogicInitialized = true;
     }
   }
 
  @override
-  void initState() {
+ void initState() {
     super.initState();
     _rotationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    // Inizializza il timer per l'autosalvataggio ogni 2 minuti
     _startAutoSaveTimer();
-  //  _initializeGame();
   }
-  
-  // Timer per l'autosalvataggio
+
   Timer? _autoSaveTimer;
-  
-  // Avvia il timer per l'autosalvataggio
+
   void _startAutoSaveTimer() {
-    // Cancella il timer esistente se presente
     _autoSaveTimer?.cancel();
-    
-    // Crea un nuovo timer che salva ogni 2 minuti
     _autoSaveTimer = Timer.periodic(const Duration(minutes: 2), (timer) {
       _autoSaveCurrentMatch();
     });
@@ -175,43 +162,37 @@ class _VolleyballScoutPageState extends State<VolleyballScoutPage>
   // Metodo per salvare automaticamente la partita corrente
   Future<void> _autoSaveCurrentMatch() async {
     try {
-      if (!_isGameLogicInitialized) return; // Non salvare se il gioco non è inizializzato
-      
+      if (!_isGameLogicInitialized) return;
+
       print('🔄 Autosalvataggio della partita in corso...');
-      
-      // Aggiorna i metadati prima del salvataggio
+
       final updatedMetadata = gameState.metadata?.copyWith(
-        date: DateTime.now().toIso8601String().substring(0, 10),
-        homeTeamId: gameState.homeTeam.id,
-        awayTeamId: gameState.awayTeam.id,
-        isCompleted: false, // Indica che la partita è ancora in corso
-      ) ?? MatchMetadata(
-        date: DateTime.now().toIso8601String().substring(0, 10),
-        homeTeamId: gameState.homeTeam.id,
-        awayTeamId: gameState.awayTeam.id,
-        isCompleted: false,
-      );
-      
-      // Aggiorna il gameState con i metadati aggiornati
-      final updatedGameState = gameState.copyWith(
-        metadata: updatedMetadata,
-      );
-      
-      // Salva la partita
+            date: DateTime.now().toIso8601String().substring(0, 10),
+            homeTeamId: gameState.homeTeam.id,
+            awayTeamId: gameState.awayTeam.id,
+            isCompleted: false,
+          ) ??
+          MatchMetadata(
+            date: DateTime.now().toIso8601String().substring(0, 10),
+            homeTeamId: gameState.homeTeam.id,
+            awayTeamId: gameState.awayTeam.id,
+            isCompleted: false,
+          );
+
+      final updatedGameState = gameState.copyWith(metadata: updatedMetadata);
+
       final savedPath = await _gameStateService.saveGameState(updatedGameState);
-      
-      // Salva anche il riferimento alla partita in corso nelle SharedPreferences
+
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('current_match_path', savedPath);
-      
+
       print('✅ Partita salvata automaticamente in: $savedPath');
     } catch (e) {
-      print('❌ Errore durante l'autosalvataggio: $e');
+      print('❌ Errore durante l\'autosalvataggio: $e');
     }
   }
 
   GameState _createInitialGameState() {
-    // Create a default GameState
     return GameState(
       homeTeam: Team(
         id: 'home',
@@ -244,11 +225,10 @@ class _VolleyballScoutPageState extends State<VolleyballScoutPage>
       matchStartTime: DateTime.now(),
       currentSimpleSequence: null,
       serveHistoryManager: const ServeHistoryManager(playerHistories: {}),
-      // MODIFICA QUI: Inizializza MatchMetadata con valori di default
       metadata: MatchMetadata(
-        date: DateTime.now().toIso8601String().substring(0, 10), // Data corrente
+        date: DateTime.now().toIso8601String().substring(0, 10),
         venue: 'Default Venue',
-        scout: 'Luca Lucchetti', // Dal tuo about_me
+        scout: 'Luca Lucchetti',
         competition: 'Friendly Match',
         homeTeamId: 'home',
         awayTeamId: 'away',
@@ -260,50 +240,47 @@ class _VolleyballScoutPageState extends State<VolleyballScoutPage>
 
   @override
   void dispose() {
-    // Cancella il timer di autosalvataggio
     _autoSaveTimer?.cancel();
     _autoSaveTimer = null;
-    
-    // Salva la partita prima di chiudere
+
     _autoSaveCurrentMatch();
-    
+
     _rotationController.dispose();
-    
+
     super.dispose();
   }
 
   // Metodo helper per determinare la rotazione iniziale basata sulla posizione del palleggiatore
   String _determineInitialRotationBasedOnSetter(Map<String, PlayerPosition> playerPositions) {
-    // Cerca il palleggiatore ('P') nelle posizioni iniziali
     final setterPosition = playerPositions.values.firstWhere(
       (p) => p.role == PlayerRole.P,
-      orElse: () => const PlayerPosition( // Fallback se non trova un palleggiatore (dovrebbe sempre esserci)
+      orElse: () => const PlayerPosition(
         playerId: 'DEFAULT_P',
         teamId: 'N/A',
-        zone: 1, // Default a zona 1 se non trovato
+        zone: 1,
         role: PlayerRole.P,
         isInFrontRow: false,
         color: Colors.transparent,
         number: '0',
       ),
     );
-    return 'P${setterPosition.zone}'; // Es: P1, P2, P6
+    return 'P${setterPosition.zone}';
   }
 
   Future<void> _initializeGame() async {
     print('🏁 _initializeGame called');
-    await _loadSelectedTeams(); 
-    await _loadTeamSettings(); 
- 
+    await _loadSelectedTeams();
+    await _loadTeamSettings();
+
     final initialHomePlayerPositions = gameState.homeTeam.playerPositions;
     final initialAwayPlayerPositions = gameState.awayTeam.playerPositions;
- 
+
     final homeInitialRotation = _determineInitialRotationBasedOnSetter(initialHomePlayerPositions);
     final awayInitialRotation = _determineInitialRotationBasedOnSetter(initialAwayPlayerPositions);
- 
+
     final initialHomeVisualRoles = RotationService.assignDynamicVisualRoles(initialHomePlayerPositions, homeInitialRotation);
     final initialAwayVisualRoles = RotationService.assignDynamicVisualRoles(initialAwayPlayerPositions, awayInitialRotation);
- 
+
     final homeTeam = Team(
       id: 'home',
       teamCode: gameState.homeTeam.teamCode.isNotEmpty ? gameState.homeTeam.teamCode : 'HOME',
@@ -318,7 +295,7 @@ class _VolleyballScoutPageState extends State<VolleyballScoutPage>
       assistantCoach: gameState.homeTeam.assistantCoach,
       playerVisualRoles: initialHomeVisualRoles,
     );
- 
+
     final awayTeam = Team(
       id: 'away',
       teamCode: gameState.awayTeam.teamCode.isNotEmpty ? gameState.awayTeam.teamCode : 'AWAY',
@@ -333,17 +310,17 @@ class _VolleyballScoutPageState extends State<VolleyballScoutPage>
       assistantCoach: gameState.awayTeam.assistantCoach,
       playerVisualRoles: initialAwayVisualRoles,
     );
- 
+
     print('✅ Teams initialized:');
     print('   - Home: ${homeTeam.name} (${homeTeam.teamCode}) - Rotation: ${homeTeam.currentRotation}');
     print('   - Away: ${awayTeam.name} (${awayTeam.teamCode}) - Rotation: ${awayTeam.currentRotation}');
- 
+
     final homePlayerVisualRoles = RotationService.assignDynamicVisualRoles(homeTeam.playerPositions, homeTeam.currentRotation);
     final awayPlayerVisualRoles = RotationService.assignDynamicVisualRoles(awayTeam.playerPositions, awayTeam.currentRotation);
- 
+
     final updatedHomeTeam = homeTeam.copyWith(playerVisualRoles: homePlayerVisualRoles);
     final updatedAwayTeam = awayTeam.copyWith(playerVisualRoles: awayPlayerVisualRoles);
- 
+
     setState(() {
       gameState = GameState(
         homeTeam: updatedHomeTeam,
@@ -370,13 +347,13 @@ class _VolleyballScoutPageState extends State<VolleyballScoutPage>
       );
       print('✅ GameState initialized with phase: ${gameState.currentPhase}, set: ${gameState.currentSet}, serving: ${gameState.servingTeam.name}');
     });
- 
+
     currentRally = RallyService.startNewRally(1, gameState.servingTeam.id);
     currentActionInRally = 1;
  
     final initialSequence = SimpleSequenceService.startServeSequence(gameState);
     _handleSequenceUpdate(initialSequence);
- 
+
     _debugPlayerPositions();
   }
 
